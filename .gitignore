@@ -3,6 +3,8 @@
 *.xlsx
 *.docx
 ~$*
+# Parsed content (contains answer keys) â€” load into Supabase, never commit
+content/
 
 # ===== Node / build artifacts (added with the app later) =====
 node_modules/
@@ -14,5 +16,5 @@ dist/
 Thumbs.db
 .DS_Store
 
-# GitHub Actions workflow — re-enable after 'gh auth refresh -s workflow'
+# GitHub Actions workflow ï¿½ re-enable after 'gh auth refresh -s workflow'
 .github/
