@@ -2,6 +2,27 @@
 
 Guidance for Claude Code when working in this repository.
 
+## Current state (updated 2026-07-01)
+
+- **Live site:** https://wizzokraft-solutions.github.io/Psychometric-Test/
+- **Repo:** `Wizzokraft-Solutions/Psychometric-Test` (public). `main` = source, `gh-pages` = built site.
+- **Done:** GitHub connection; Vite + React + TS app scaffolded; Tailwind v4 + shadcn/ui; HashRouter; Landing/Quiz/Admin **page shells with mock data**.
+- **Next:** swap mock → real (employee list, then Supabase for content import, server-side scoring, persistence, and Admin reports).
+
+## Dev commands (run from repo root)
+
+- `npm run dev` — local dev server.
+- `npm run build` — type-check + production build to `dist/`.
+- `npm run deploy` — build + publish `dist/` to the `gh-pages` branch (this is how the live site updates).
+
+## Important gotchas
+
+- **Deploy is via the `gh-pages` branch, NOT GitHub Actions.** The `gh auth login` web token lacks the `workflow` scope, so the Actions YAML can't be pushed. `.github/` is gitignored; the workflow file is parked locally. To enable Actions auto-deploy: `gh auth refresh -s workflow`, remove `.github/` from `.gitignore`, commit `.github/workflows/deploy.yml`.
+- **shadcn/ui was set up manually** (`components.json`, `src/lib/utils.ts`, theme tokens in `src/index.css`). The `npx shadcn@latest init` CLI hangs in a headless shell — add components by writing the files directly (copy from ui.shadcn.com) rather than relying on the CLI.
+- **Vite `base` is `/Psychometric-Test/`** (must match the repo name for Pages). Use `HashRouter` so deep links like `#/admin` work.
+- On Windows, `git`/`gh`/`node` need a PATH refresh in new shells: `$env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')`.
+- Mock data lives in `src/lib/mockData.ts`; `TODO:` comments in the pages mark where real data/Supabase wiring goes.
+
 ## What this project is
 
 A web app for the **Wizzokraft Psychometric Test** with two flows:
