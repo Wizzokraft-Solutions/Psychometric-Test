@@ -1,0 +1,18 @@
+# ===== Sensitive source data â€” NEVER upload to GitHub =====
+# Question banks, answer keys, scoring and the report template stay local only.
+*.xlsx
+*.docx
+~$*
+
+# ===== Node / build artifacts (added with the app later) =====
+node_modules/
+dist/
+.env
+.env*.local
+
+# ===== OS / editor cruft =====
+Thumbs.db
+.DS_Store
+
+# GitHub Actions workflow — re-enable after 'gh auth refresh -s workflow'
+.github/
