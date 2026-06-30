@@ -13,3 +13,6 @@ dist/
 # ===== OS / editor cruft =====
 Thumbs.db
 .DS_Store
+
+# GitHub Actions workflow — re-enable after 'gh auth refresh -s workflow'
+.github/
