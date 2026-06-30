@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { Search, ChevronRight, UserRound, Briefcase } from 'lucide-react'
 import Header from '@/components/Header'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
@@ -20,15 +22,12 @@ export default function LandingPage() {
   const [role, setRole] = useState<Role | null>(null)
 
   useEffect(() => {
-    supabase
-      .from('employees')
-      .select('emp_no,name')
-      .then(({ data }) => {
-        if (data && data.length > 0) {
-          setEmployees(data as Employee[])
-          setUsingMock(false)
-        }
-      })
+    supabase.from('employees').select('emp_no,name').then(({ data }) => {
+      if (data && data.length > 0) {
+        setEmployees(data as Employee[])
+        setUsingMock(false)
+      }
+    })
   }, [])
 
   const results = useMemo(() => {
@@ -42,64 +41,98 @@ export default function LandingPage() {
   function pick(e: Employee) {
     setSelected(e.emp_no)
     setForm((f) => ({ ...f, emp_no: e.emp_no, name: e.name }))
+    setTimeout(() => document.getElementById('details')?.scrollIntoView({ behavior: 'smooth' }), 80)
   }
-
   function set<K extends keyof EmployeeForm>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }))
   }
-
   function startQuiz() {
     if (!selected || !role) return
     navigate('/quiz', { state: { form, role } })
   }
 
   return (
-    <div className="min-h-svh bg-background">
+    <div className="app-bg min-h-svh">
       <Header />
-      <main className="mx-auto max-w-3xl px-4 py-8">
-        <h1 className="text-2xl font-bold">Welcome</h1>
-        <p className="mt-1 text-muted-foreground">
-          Find your name below, fill in your details, and choose your category to begin.
-        </p>
+      <main className="mx-auto max-w-3xl px-4 py-10">
+        {/* Hero */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <span className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
+            <span className="brand-gradient h-2 w-2 rounded-full" /> Wizzokraft Solutions
+          </span>
+          <h1 className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl">
+            <span className="brand-text-gradient">Psychometric</span> Assessment
+          </h1>
+          <p className="mt-3 max-w-xl text-muted-foreground">
+            Find your name, confirm your details, and pick your category to begin. It takes about 15–20 minutes.
+          </p>
+        </motion.div>
 
-        <section className="mt-6">
-          <label className="text-sm font-medium">Find your name / Employee ID</label>
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by name or ID…"
-            className="mt-2 w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-          />
-          <ul className="mt-2 max-h-56 divide-y overflow-auto rounded-md border">
+        {/* Employee search */}
+        <motion.section
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.08 }}
+          className="mt-8 rounded-2xl border bg-card p-5 shadow-sm"
+        >
+          <label className="text-sm font-semibold">1. Find your name / Employee ID</label>
+          <div className="relative mt-2">
+            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by name or ID…"
+              className="w-full rounded-lg border bg-background py-2.5 pl-9 pr-3 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40"
+            />
+          </div>
+          <ul className="mt-3 max-h-60 space-y-1.5 overflow-auto pr-1">
             {results.map((e) => (
               <li key={e.emp_no}>
                 <button
                   type="button"
                   onClick={() => pick(e)}
-                  className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-accent ${
-                    selected === e.emp_no ? 'bg-accent' : ''
+                  className={`flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-left text-sm transition-all hover:-translate-y-px hover:shadow-sm ${
+                    selected === e.emp_no
+                      ? 'border-primary/60 bg-accent brand-ring'
+                      : 'hover:border-primary/30'
                   }`}
                 >
-                  <span>{e.name}</span>
+                  <span className="flex items-center gap-2 font-medium">
+                    <span className="brand-gradient flex size-7 items-center justify-center rounded-full text-xs font-bold text-white">
+                      {e.name.charAt(0)}
+                    </span>
+                    {e.name}
+                  </span>
                   <span className="text-muted-foreground">{e.emp_no}</span>
                 </button>
               </li>
             ))}
             {results.length === 0 && (
-              <li className="px-3 py-2 text-sm text-muted-foreground">No matches.</li>
+              <li className="px-1 py-2 text-sm text-muted-foreground">No matches.</li>
             )}
           </ul>
           {usingMock && (
-            <p className="mt-1 text-xs text-muted-foreground">
-              (Placeholder list — real employee list loads once uploaded.)
+            <p className="mt-2 text-xs text-muted-foreground">
+              Placeholder list — your real employee list appears here once uploaded.
             </p>
           )}
-        </section>
+        </motion.section>
 
+        {/* Details form */}
         {selected && (
-          <section className="mt-8">
-            <h2 className="text-lg font-semibold">Your details — {form.name}</h2>
+          <motion.section
+            id="details"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45 }}
+            className="mt-6 rounded-2xl border bg-card p-5 shadow-sm"
+          >
+            <label className="text-sm font-semibold">2. Confirm your details — {form.name}</label>
             <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Emp No." value={form.emp_no} readOnly />
               <Field label="Name" value={form.name} readOnly />
@@ -110,44 +143,66 @@ export default function LandingPage() {
               <Field label="Months / Years in Current Job" value={form.tenure} onChange={(v) => set('tenure', v)} />
             </div>
 
-            <h2 className="mt-8 text-lg font-semibold">Select your category</h2>
-            <div className="mt-3 flex flex-wrap gap-3">
-              <Button variant={role === 'manager' ? 'default' : 'outline'} onClick={() => setRole('manager')}>
-                Manager &amp; Above
-              </Button>
-              <Button variant={role === 'others' ? 'default' : 'outline'} onClick={() => setRole('others')}>
-                Others
-              </Button>
+            <label className="mt-6 block text-sm font-semibold">3. Select your category</label>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <RoleCard
+                active={role === 'manager'} onClick={() => setRole('manager')}
+                icon={<Briefcase className="size-5" />} title="Manager & Above"
+                desc="Leadership-level assessment" />
+              <RoleCard
+                active={role === 'others'} onClick={() => setRole('others')}
+                icon={<UserRound className="size-5" />} title="Others"
+                desc="Individual contributor assessment" />
             </div>
 
-            <div className="mt-8">
-              <Button disabled={!role} onClick={startQuiz}>Start Test</Button>
-            </div>
-          </section>
+            <Button size="lg" className="mt-6 w-full sm:w-auto" disabled={!role} onClick={startQuiz}>
+              Start Test <ChevronRight className="size-4" />
+            </Button>
+          </motion.section>
         )}
       </main>
     </div>
   )
 }
 
+function RoleCard({
+  active, onClick, icon, title, desc,
+}: {
+  active: boolean; onClick: () => void; icon: React.ReactNode; title: string; desc: string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex items-center gap-3 rounded-xl border p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md ${
+        active ? 'border-primary bg-accent brand-ring' : 'hover:border-primary/40'
+      }`}
+    >
+      <span className={`flex size-10 items-center justify-center rounded-lg ${active ? 'brand-gradient text-white' : 'bg-muted text-muted-foreground'}`}>
+        {icon}
+      </span>
+      <span>
+        <span className="block font-semibold">{title}</span>
+        <span className="block text-xs text-muted-foreground">{desc}</span>
+      </span>
+    </button>
+  )
+}
+
 function Field({
   label, type = 'text', value, readOnly, onChange,
 }: {
-  label: string
-  type?: string
-  value: string
-  readOnly?: boolean
-  onChange?: (v: string) => void
+  label: string; type?: string; value: string; readOnly?: boolean; onChange?: (v: string) => void
 }) {
   return (
     <div>
-      <label className="text-sm font-medium">{label}</label>
+      <label className="text-xs font-medium text-muted-foreground">{label}</label>
       <input
         type={type}
         value={value}
         readOnly={readOnly}
         onChange={onChange ? (e) => onChange(e.target.value) : undefined}
-        className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 read-only:bg-muted read-only:text-muted-foreground"
+        className="mt-1 w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 read-only:bg-muted read-only:text-muted-foreground"
       />
     </div>
   )

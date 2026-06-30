@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react'
+import { motion } from 'framer-motion'
+import { Lock } from 'lucide-react'
 import Header from '@/components/Header'
 import Modal from '@/components/Modal'
 import { Button } from '@/components/ui/button'
@@ -67,23 +69,33 @@ export default function AdminPage() {
 
   if (!authed) {
     return (
-      <div className="min-h-svh bg-background">
+      <div className="app-bg min-h-svh">
         <Header />
-        <main className="mx-auto max-w-sm px-4 py-16">
-          <h1 className="text-xl font-bold">Admin access</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Enter the admin password to view reports.</p>
-          <input
-            type="password"
-            value={pw}
-            onChange={(e) => setPw(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && login()}
-            placeholder="Password"
-            className="mt-4 w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-          />
-          {authErr && <p className="mt-2 text-sm text-destructive">{authErr}</p>}
-          <Button className="mt-3 w-full" disabled={checking || !pw} onClick={login}>
-            {checking ? 'Checking…' : 'Enter'}
-          </Button>
+        <main className="mx-auto flex max-w-sm flex-col items-center px-4 py-20">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="w-full rounded-2xl border bg-card p-6 shadow-sm"
+          >
+            <div className="brand-gradient mx-auto flex size-12 items-center justify-center rounded-xl text-white">
+              <Lock className="size-5" />
+            </div>
+            <h1 className="mt-4 text-center text-xl font-bold">Admin access</h1>
+            <p className="mt-1 text-center text-sm text-muted-foreground">Enter the password to view reports.</p>
+            <input
+              type="password"
+              value={pw}
+              onChange={(e) => setPw(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && login()}
+              placeholder="Password"
+              className="mt-4 w-full rounded-lg border bg-background px-3 py-2.5 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40"
+            />
+            {authErr && <p className="mt-2 text-sm text-destructive">{authErr}</p>}
+            <Button className="mt-3 w-full" disabled={checking || !pw} onClick={login}>
+              {checking ? 'Checking…' : 'Enter'}
+            </Button>
+          </motion.div>
         </main>
       </div>
     )
@@ -121,10 +133,10 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-svh bg-background">
+    <div className="app-bg min-h-svh">
       <Header />
       <main className="mx-auto max-w-6xl px-4 py-8">
-        <h1 className="text-2xl font-bold">Reports</h1>
+        <h1 className="text-2xl font-bold"><span className="brand-text-gradient">Reports</span></h1>
 
         <div className="mt-4 flex gap-2">
           {(['manager', 'others'] as Role[]).map((r) => (
@@ -205,7 +217,12 @@ export default function AdminPage() {
 
         {/* Per-employee drill-down */}
         {selected && (
-          <div className="mt-8 rounded-md border p-5">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="mt-8 rounded-2xl border bg-card p-5 shadow-sm"
+          >
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold">{selected.name} — {selected.emp_no}</h2>
               <div className="flex gap-2">
@@ -227,7 +244,7 @@ export default function AdminPage() {
               ))}
             </div>
             <p className="mt-4 text-right font-semibold">Total: {selected.total}/300</p>
-          </div>
+          </motion.div>
         )}
 
         {/* Answer-detail popup */}
