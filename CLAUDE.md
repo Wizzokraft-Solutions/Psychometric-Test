@@ -6,8 +6,15 @@ Guidance for Claude Code when working in this repository.
 
 - **Live site:** https://wizzokraft-solutions.github.io/Psychometric-Test/
 - **Repo:** `Wizzokraft-Solutions/Psychometric-Test` (public). `main` = source, `gh-pages` = built site.
-- **Done:** GitHub connection; Vite + React + TS app scaffolded; Tailwind v4 + shadcn/ui; HashRouter; Landing/Quiz/Admin **page shells with mock data**.
-- **Next:** swap mock → real (employee list, then Supabase for content import, server-side scoring, persistence, and Admin reports).
+- **Supabase:** project `tkudyxopvvhwqalwiahk`. Schema (`supabase/schema.sql`) + functions (`supabase/functions.sql`) applied. Content loaded (120 Q / 120 keys / 61 interpretations).
+- **Done:** GitHub; full app; Phase 1 (content pipeline); **Phase 3 (real quiz + server-side `submit_quiz` scoring)**; **Phase 4 (admin reports: segment, master, drill-down, answer popup, Excel export)**. All verified live.
+- **Next (Phase 5):** real employee list, validation, prevent duplicate submissions, mobile polish.
+
+## Data flow & key files
+- Front-end Supabase client: `src/lib/supabase.ts` (anon key from `.env` `VITE_*`). Types in `src/lib/types.ts`.
+- Quiz reads `questions` (public) and submits via `submit_quiz` RPC → scores server-side, writes `submissions`.
+- Admin reads via `get_admin_data(password)` RPC. **Admin password lives in the RLS-locked `admin_config` table — NOT in this repo.** To change it: update `admin_config` (via service key / SQL).
+- SQL is applied by pasting `supabase/*.sql` into the Supabase SQL Editor (raw Postgres port may be firewalled here). Data load: `node --env-file=.env scripts/import-to-supabase.mjs`.
 
 ## Dev commands (run from repo root)
 

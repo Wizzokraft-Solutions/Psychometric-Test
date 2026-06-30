@@ -14,5 +14,13 @@
 ### Phase 0c — UI shells with mock data
 - Built Landing (employee search + GEN DATA form + role selector), Quiz (progress + A–D), and Admin (gate + tabs + Segment/Master tables) pages using mock data in `src/lib/mockData.ts`.
 
-### Blocked
-- Phase 0d (Supabase): content import, server-side scoring, persistence, real Admin reports — awaiting user's Supabase account.
+### Phase 0d + Phase 1 — Supabase + content pipeline
+- Supabase project created; schema + RLS applied. Parsed all 6 sets → loaded 120 questions, 120 answer keys, 61 interpretations. Security verified (public key blocked from keys/submissions).
+
+### Phase 3 — Quiz wired to Supabase
+- Quiz loads the real 60 questions by role in fixed order, with a motivational break after each set of 10.
+- Added `submit_quiz` server-side scoring function (scores against hidden keys → per-section + total + interpretations, persists). Verified: all-B → 300/300.
+
+### Phase 4 — Admin reports
+- Password gate via `get_admin_data` RPC (password in RLS-locked `admin_config`).
+- Segment table (boss filter), Master report (6 section scores), per-employee drill-down with interpretations, answer-detail popup (per-question choice/points + running totals), Excel export. Role split throughout.
