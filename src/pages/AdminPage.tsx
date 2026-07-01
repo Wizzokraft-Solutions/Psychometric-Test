@@ -138,7 +138,7 @@ export default function AdminPage() {
       <main className="mx-auto max-w-6xl px-4 py-8">
         <h1 className="text-2xl font-bold"><span className="brand-text-gradient">Reports</span></h1>
 
-        <div className="mt-4 flex gap-2">
+        <div className="mt-4 flex flex-wrap items-center gap-2">
           {(['manager', 'others'] as Role[]).map((r) => (
             <Button
               key={r}
@@ -155,7 +155,7 @@ export default function AdminPage() {
         </div>
 
         {/* Segment report */}
-        <div className="mt-8 flex items-center justify-between">
+        <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-lg font-semibold">Employees per Boss</h2>
           <div className="flex items-center gap-2">
             <select
@@ -187,7 +187,7 @@ export default function AdminPage() {
         </div>
 
         {/* Master report */}
-        <div className="mt-8 flex items-center justify-between">
+        <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-lg font-semibold">Master Report</h2>
           <Button size="sm" variant="outline" onClick={exportMaster}>Export Excel</Button>
         </div>

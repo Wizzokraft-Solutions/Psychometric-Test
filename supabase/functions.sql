@@ -35,6 +35,12 @@ begin
     raise exception 'invalid role: %', p_role;
   end if;
 
+  -- one submission per employee
+  if nullif(p_employee->>'emp_no', '') is not null
+     and exists (select 1 from submissions where emp_no = nullif(p_employee->>'emp_no', '')) then
+    raise exception 'already_submitted';
+  end if;
+
   for a in select value from jsonb_array_elements(p_answers) as t(value)
   loop
     v_set    := (a->>'set')::int;
@@ -127,3 +133,20 @@ end;
 $$;
 
 grant execute on function get_admin_data(text) to anon, authenticated;
+
+-- ============================================================
+-- Duplicate-submission guard: DB-level safety net + a UI pre-check.
+-- ============================================================
+create unique index if not exists submissions_emp_no_unique
+  on submissions (emp_no) where emp_no is not null;
+
+create or replace function has_submitted(p_emp_no text)
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select exists (select 1 from submissions where emp_no = p_emp_no);
+$$;
+
+grant execute on function has_submitted(text) to anon, authenticated;

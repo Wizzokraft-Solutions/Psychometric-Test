@@ -24,6 +24,7 @@ export default function QuizPage() {
   const [submitting, setSubmitting] = useState(false)
   const [submitErr, setSubmitErr] = useState<string | null>(null)
   const [done, setDone] = useState(false)
+  const [already, setAlready] = useState(false)
 
   useEffect(() => {
     if (!role) return
@@ -57,7 +58,11 @@ export default function QuizPage() {
           <PartyPopper className="mx-auto size-14 text-brand-green" />
         </motion.div>
         <h1 className="mt-4 text-3xl font-bold">Thank you! 🎉</h1>
-        <p className="mt-2 text-muted-foreground">Your responses have been recorded. You may now close this page.</p>
+        <p className="mt-2 text-muted-foreground">
+          {already
+            ? 'This assessment was already completed for your record. You may now close this page.'
+            : 'Your responses have been recorded. You may now close this page.'}
+        </p>
         <Button className="mt-6" onClick={() => navigate('/')}>Done</Button>
       </Shell>
     )
@@ -81,7 +86,10 @@ export default function QuizPage() {
     const payload: Answer[] = questions.map((q) => ({ set: q.set, question: q.number, choice: answers[q.id] }))
     const { error } = await supabase.rpc('submit_quiz', { p_employee: form, p_role: role, p_answers: payload })
     setSubmitting(false)
-    if (error) { setSubmitErr(error.message); return }
+    if (error) {
+      if (error.message?.toLowerCase().includes('already_submitted')) { setAlready(true); setDone(true); return }
+      setSubmitErr(error.message); return
+    }
     setDone(true)
   }
 
