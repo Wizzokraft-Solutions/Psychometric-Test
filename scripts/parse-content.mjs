@@ -109,7 +109,11 @@ async function main() {
   const allInterp = []
   const warnings = []
   const summary = []
+  const maxPos = { A: 0, B: 0, C: 0, D: 0 } // where the top score lands
 
+  // NOTE: the source .docx/.xlsx are already in the swapped order (SWAPING.docx
+  // was applied to them once, via scripts/swap-source-*.mjs). This parser just
+  // reads them as-is — do NOT re-apply the swap here or it would double-apply.
   for (const set of SETS) {
     const dir = path.join(ROOT, set.folder)
     for (const { role, queRe, ansRe } of ROLES) {
@@ -124,8 +128,13 @@ async function main() {
       }
 
       for (const q of questions) {
+        const pts = points[q.number]
+        if (pts) {
+          const top = ['A', 'B', 'C', 'D'].reduce((m, k) => (pts[k] > pts[m] ? k : m), 'A')
+          maxPos[top]++
+        }
         allQuestions.push({ set: set.n, section: set.section, role, number: q.number, text: q.text, options: q.options })
-        allKeys.push({ set: set.n, role, question: q.number, points: points[q.number] ?? null })
+        allKeys.push({ set: set.n, role, question: q.number, points: pts ?? null })
       }
       for (const it of interpretations) {
         allInterp.push({ set: set.n, section: set.section, role, ...it })
@@ -141,6 +150,7 @@ async function main() {
   console.log('Parsed content -> ./content')
   console.table(summary)
   console.log(`Questions: ${allQuestions.length} | Answer-key rows: ${allKeys.length} | Interpretation bands: ${allInterp.length}`)
+  console.log(`Top-score position:`, maxPos, '(spread across A/B/C/D = swap is in the sources)')
   if (warnings.length) {
     console.log('\nWARNINGS:')
     warnings.forEach((w) => console.log('  - ' + w))

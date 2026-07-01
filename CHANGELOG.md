@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-07-02
+
+### Answer-option swap (fixes "always B" giveaway)
+- Applied `SWAPING.docx` (90 swaps, 30 SAME) to reposition option B ↔ Final in both the question text and the scoring — in Supabase AND the source `.docx`/`.xlsx` files.
+- Correct answer now spread across A/B/C/D. Verified: best answers = 300/300, all-B = 135 (mgr) / 154 (others). Sources backed up to `source-backup/`.
+
+### Employee list, TEST accounts, mobile, mandatory fields
+- Loaded 112 real employees + 5 TEST accounts (top of list); names hide after completion; removed all mock data.
+- Mobile responsive pass + mobile e2e tests; required-field markers.
+
 ## 2026-07-01
 
 ### Phase 0 — Connect to GitHub

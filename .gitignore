@@ -6,6 +6,8 @@
 ~$*
 # Parsed content (contains answer keys) — load into Supabase, never commit
 content/
+# Backups of source docx/xlsx
+source-backup/
 
 # ===== Node / build artifacts (added with the app later) =====
 node_modules/

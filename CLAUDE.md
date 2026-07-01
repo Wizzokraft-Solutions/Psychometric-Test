@@ -26,6 +26,14 @@ Guidance for Claude Code when working in this repository.
 - `npm run build` — type-check + production build to `dist/`.
 - `npm run deploy` — build + publish `dist/` to the `gh-pages` branch (this is how the live site updates).
 
+## Answer-option swap (IMPORTANT)
+
+Originally the correct answer was always option **B** (a giveaway). `SWAPING.docx` defines, per question, which position B swaps with (or SAME). This swap has **already been applied once** to the source `.docx`/`.xlsx` files (via `scripts/swap-source-docx.mjs` + `scripts/swap-source-xlsx.mjs`) and to Supabase.
+
+- The source files are now the **swapped** truth. `scripts/parse-content.mjs` reads them as-is and **must NOT re-apply the swap** (it would double-apply and undo it). `scripts/swaps.mjs` only exists for the one-time source rewrite.
+- After the swap, the correct answer is spread across A/B/C/D (verified: best answers = 300/300, all-B = 135/154). Do not "fix" all-B being < 300 — that's the whole point.
+- Backups of the pre-swap files are in `source-backup/` (gitignored).
+
 ## Important gotchas
 
 - **Deploy is via the `gh-pages` branch, NOT GitHub Actions.** The `gh auth login` web token lacks the `workflow` scope, so the Actions YAML can't be pushed. `.github/` is gitignored; the workflow file is parked locally. To enable Actions auto-deploy: `gh auth refresh -s workflow`, remove `.github/` from `.gitignore`, commit `.github/workflows/deploy.yml`.
