@@ -21,6 +21,11 @@
 - Quiz loads the real 60 questions by role in fixed order, with a motivational break after each set of 10.
 - Added `submit_quiz` server-side scoring function (scores against hidden keys → per-section + total + interpretations, persists). Verified: all-B → 300/300.
 
+### Phase 5 — Validation, duplicate guard, responsive, UI overhaul, tests
+- Branded theme (logo green→gold) + framer-motion transitions; sections hidden from quiz takers.
+- Form validation; duplicate-submission guard (`submit_quiz` reject + unique index + `has_submitted`); responsive pass.
+- Playwright e2e suite (7 tests) covering landing/search/validation/quiz/admin + duplicate blocking.
+
 ### Phase 4 — Admin reports
 - Password gate via `get_admin_data` RPC (password in RLS-locked `admin_config`).
 - Segment table (boss filter), Master report (6 section scores), per-employee drill-down with interpretations, answer-detail popup (per-question choice/points + running totals), Excel export. Role split throughout.

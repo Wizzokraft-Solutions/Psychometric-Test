@@ -7,8 +7,12 @@ Guidance for Claude Code when working in this repository.
 - **Live site:** https://wizzokraft-solutions.github.io/Psychometric-Test/
 - **Repo:** `Wizzokraft-Solutions/Psychometric-Test` (public). `main` = source, `gh-pages` = built site.
 - **Supabase:** project `tkudyxopvvhwqalwiahk`. Schema (`supabase/schema.sql`) + functions (`supabase/functions.sql`) applied. Content loaded (120 Q / 120 keys / 61 interpretations).
-- **Done:** GitHub; full app; Phase 1 (content pipeline); **Phase 3 (real quiz + server-side `submit_quiz` scoring)**; **Phase 4 (admin reports: segment, master, drill-down, answer popup, Excel export)**. All verified live.
-- **Next (Phase 5):** real employee list, validation, prevent duplicate submissions, mobile polish.
+- **Done:** GitHub; full app; Phase 1 (content pipeline); Phase 3 (quiz + `submit_quiz` scoring); Phase 4 (admin reports); **Phase 5 (validation, duplicate guard, responsive, branded UI + framer-motion)**. All verified live + covered by Playwright e2e.
+- **Next:** upload the real employee list; optional GitHub Actions deploy; dark-mode toggle.
+
+## Testing
+- `npm run e2e` — Playwright browser tests (`e2e/`). Auto-builds + previews. Set `ADMIN_PW` for the admin-login test; Supabase env is read from `.env` by `playwright.config.ts`.
+- Sections are **hidden from quiz takers** (shown only in admin). Admin password lives in `admin_config` (not repo).
 
 ## Data flow & key files
 - Front-end Supabase client: `src/lib/supabase.ts` (anon key from `.env` `VITE_*`). Types in `src/lib/types.ts`.
