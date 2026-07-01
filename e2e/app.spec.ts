@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
-// A placeholder employee from the fallback list (used until the real list is uploaded).
-const EMP = 'Diya Patel'
+// A TEST account (top of the list) so e2e never touches real employees.
+const EMP = 'Samrendra'
 
 test('landing page loads with branding', async ({ page }) => {
   await page.goto('')
@@ -11,9 +11,9 @@ test('landing page loads with branding', async ({ page }) => {
 
 test('employee search filters the list', async ({ page }) => {
   await page.goto('')
-  await page.getByPlaceholder(/Search by name/i).fill('Diya')
+  await page.getByPlaceholder(/Search by name/i).fill('Samr')
   await expect(page.getByRole('button', { name: new RegExp(EMP) })).toBeVisible()
-  await expect(page.getByRole('button', { name: /Aarav Sharma/ })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /Bala/ })).toHaveCount(0)
 })
 
 test('form validation blocks starting until required fields are filled', async ({ page }) => {

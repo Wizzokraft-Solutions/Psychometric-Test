@@ -6,7 +6,6 @@ import Header from '@/components/Header'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import type { Employee, EmployeeForm, Role } from '@/lib/types'
-import { mockEmployees } from '@/lib/mockData'
 
 const EMPTY_FORM: EmployeeForm = {
   emp_no: '', name: '', dob: '', designation: '', department: '', boss: '', tenure: '',
@@ -14,10 +13,18 @@ const EMPTY_FORM: EmployeeForm = {
 const REQUIRED: (keyof EmployeeForm)[] = ['dob', 'designation', 'department', 'boss', 'tenure']
 const today = new Date().toISOString().slice(0, 10)
 
+// TEST-* accounts first, everyone else alphabetically (matches the DB ordering).
+function sortTestFirst(list: Employee[]): Employee[] {
+  return [...list].sort((a, b) => {
+    const at = a.emp_no.startsWith('TEST-'), bt = b.emp_no.startsWith('TEST-')
+    if (at !== bt) return at ? -1 : 1
+    return at ? a.emp_no.localeCompare(b.emp_no) : a.name.localeCompare(b.name)
+  })
+}
+
 export default function LandingPage() {
   const navigate = useNavigate()
-  const [employees, setEmployees] = useState<Employee[]>(mockEmployees)
-  const [usingMock, setUsingMock] = useState(true)
+  const [employees, setEmployees] = useState<Employee[]>([])
   const [query, setQuery] = useState('')
   const [form, setForm] = useState<EmployeeForm>(EMPTY_FORM)
   const [selected, setSelected] = useState<string | null>(null)
@@ -26,8 +33,13 @@ export default function LandingPage() {
   const [alreadyDone, setAlreadyDone] = useState(false)
 
   useEffect(() => {
-    supabase.from('employees').select('emp_no,name').then(({ data }) => {
-      if (data && data.length > 0) { setEmployees(data as Employee[]); setUsingMock(false) }
+    // Prefer the RPC (excludes people who already submitted). Fall back to the
+    // raw table if the function isn't available yet.
+    supabase.rpc('get_available_employees').then(({ data, error }) => {
+      if (!error && data) { setEmployees(data as Employee[]); return }
+      supabase.from('employees').select('emp_no,name').then(({ data: d }) => {
+        if (d) setEmployees(sortTestFirst(d as Employee[]))
+      })
     })
   }, [])
 
@@ -45,6 +57,9 @@ export default function LandingPage() {
   function pick(e: Employee) {
     setSelected(e.emp_no)
     setForm((f) => ({ ...f, emp_no: e.emp_no, name: e.name }))
+    // remove the chosen name from the dropdown list
+    setEmployees((list) => list.filter((x) => x.emp_no !== e.emp_no))
+    setQuery('')
     setAttempted(false)
     setAlreadyDone(false)
     // pre-check: has this employee already completed the assessment?
@@ -112,7 +127,6 @@ export default function LandingPage() {
             ))}
             {results.length === 0 && <li className="px-1 py-2 text-sm text-muted-foreground">No matches.</li>}
           </ul>
-          {usingMock && <p className="mt-2 text-xs text-muted-foreground">Placeholder list — your real employee list appears here once uploaded.</p>}
         </motion.section>
 
         {selected && (

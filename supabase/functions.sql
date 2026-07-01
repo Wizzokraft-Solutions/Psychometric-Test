@@ -150,3 +150,24 @@ as $$
 $$;
 
 grant execute on function has_submitted(text) to anon, authenticated;
+
+-- ============================================================
+-- get_available_employees: employees who have NOT yet submitted.
+-- Once someone completes the test they drop off this list (and the dropdown).
+-- TEST-* accounts are sorted to the top; everyone else alphabetically.
+-- ============================================================
+create or replace function get_available_employees()
+returns table (emp_no text, name text)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select e.emp_no, e.name
+  from employees e
+  where not exists (select 1 from submissions s where s.emp_no = e.emp_no)
+  order by (e.emp_no like 'TEST-%') desc,
+           case when e.emp_no like 'TEST-%' then e.emp_no else e.name end;
+$$;
+
+grant execute on function get_available_employees() to anon, authenticated;
