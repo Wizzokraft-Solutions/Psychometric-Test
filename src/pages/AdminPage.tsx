@@ -288,10 +288,10 @@ function AnswerDetail({ submission, qLookup }: { submission: Submission; qLookup
                   return (
                     <tr key={a.question} className="border-t align-top">
                       <Td>{a.question}</Td>
-                      <Td>
+                      <td className="min-w-[12rem] px-3 py-2 align-top whitespace-normal">
                         <div>{q?.text ?? `Q${a.question}`}</div>
                         {opt && <div className="text-muted-foreground">{a.choice}. {opt.text}</div>}
-                      </Td>
+                      </td>
                       <Td>{a.choice}</Td>
                       <Td>{a.points}</Td>
                     </tr>

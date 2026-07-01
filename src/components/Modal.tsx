@@ -38,7 +38,7 @@ export default function Modal({
             ✕
           </button>
         </div>
-        <div className="max-h-[70vh] overflow-y-auto px-5 py-4">{children}</div>
+        <div className="max-h-[75vh] overflow-y-auto overflow-x-auto px-4 py-4 sm:px-5">{children}</div>
       </div>
     </div>
   )

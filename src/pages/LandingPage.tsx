@@ -115,13 +115,13 @@ export default function LandingPage() {
                     selected === e.emp_no ? 'border-primary/60 bg-accent brand-ring' : 'hover:border-primary/30'
                   }`}
                 >
-                  <span className="flex items-center gap-2 font-medium">
-                    <span className="brand-gradient flex size-7 items-center justify-center rounded-full text-xs font-bold text-white">
+                  <span className="flex min-w-0 items-center gap-2 font-medium">
+                    <span className="brand-gradient flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white">
                       {e.name.charAt(0)}
                     </span>
-                    {e.name}
+                    <span className="truncate">{e.name}</span>
                   </span>
-                  <span className="text-muted-foreground">{e.emp_no}</span>
+                  <span className="shrink-0 pl-2 text-muted-foreground">{e.emp_no}</span>
                 </button>
               </li>
             ))}
@@ -144,15 +144,15 @@ export default function LandingPage() {
             <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Emp No." value={form.emp_no} readOnly />
               <Field label="Name" value={form.name} readOnly />
-              <Field label="Date of Birth" type="date" max={today} value={form.dob} onChange={(v) => set('dob', v)}
+              <Field label="Date of Birth" type="date" max={today} value={form.dob} onChange={(v) => set('dob', v)} required
                 error={attempted && !form.dob ? 'Required' : dobInFuture ? 'Cannot be in the future' : ''} />
-              <Field label="Designation" value={form.designation} onChange={(v) => set('designation', v)}
+              <Field label="Designation" value={form.designation} onChange={(v) => set('designation', v)} required
                 error={attempted && !form.designation.trim() ? 'Required' : ''} />
-              <Field label="Department" value={form.department} onChange={(v) => set('department', v)}
+              <Field label="Department" value={form.department} onChange={(v) => set('department', v)} required
                 error={attempted && !form.department.trim() ? 'Required' : ''} />
-              <Field label="Reporting Boss Name" value={form.boss} onChange={(v) => set('boss', v)}
+              <Field label="Reporting Boss Name" value={form.boss} onChange={(v) => set('boss', v)} required
                 error={attempted && !form.boss.trim() ? 'Required' : ''} />
-              <Field label="Months / Years in Current Job" value={form.tenure} onChange={(v) => set('tenure', v)}
+              <Field label="Months / Years in Current Job" value={form.tenure} onChange={(v) => set('tenure', v)} required
                 error={attempted && !form.tenure.trim() ? 'Required' : ''} />
             </div>
 
@@ -195,13 +195,15 @@ function RoleCard({ active, onClick, icon, title, desc }: {
   )
 }
 
-function Field({ label, type = 'text', value, readOnly, onChange, error, max }: {
-  label: string; type?: string; value: string; readOnly?: boolean; onChange?: (v: string) => void; error?: string; max?: string
+function Field({ label, type = 'text', value, readOnly, onChange, error, max, required }: {
+  label: string; type?: string; value: string; readOnly?: boolean; onChange?: (v: string) => void; error?: string; max?: string; required?: boolean
 }) {
   const id = 'f-' + label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
   return (
     <div>
-      <label htmlFor={id} className="text-xs font-medium text-muted-foreground">{label}</label>
+      <label htmlFor={id} className="text-xs font-medium text-muted-foreground">
+        {label}{required && <span className="text-destructive"> *</span>}
+      </label>
       <input
         id={id} type={type} value={value} readOnly={readOnly} max={max}
         onChange={onChange ? (e) => onChange(e.target.value) : undefined}

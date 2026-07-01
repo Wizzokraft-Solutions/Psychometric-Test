@@ -17,9 +17,9 @@ export default function Header() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           />
-          <span className="hidden text-base font-semibold tracking-tight sm:inline">
-            <span className="brand-text-gradient">Wizzokraft</span>{' '}
-            <span className="text-muted-foreground">Psychometric Test</span>
+          <span className="text-sm font-semibold tracking-tight sm:text-base">
+            <span className="brand-text-gradient">Wizzokraft</span>
+            <span className="hidden text-muted-foreground sm:inline"> Psychometric Test</span>
           </span>
         </Link>
       </div>
