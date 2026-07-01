@@ -155,6 +155,7 @@ export default function QuizPage() {
                   <button
                     key={o.key}
                     type="button"
+                    data-testid="option"
                     onClick={() => choose(o.key)}
                     className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm transition-all hover:-translate-y-px ${
                       active ? 'border-primary bg-accent brand-ring' : 'hover:border-primary/40 hover:shadow-sm'

@@ -184,11 +184,12 @@ function RoleCard({ active, onClick, icon, title, desc }: {
 function Field({ label, type = 'text', value, readOnly, onChange, error, max }: {
   label: string; type?: string; value: string; readOnly?: boolean; onChange?: (v: string) => void; error?: string; max?: string
 }) {
+  const id = 'f-' + label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
   return (
     <div>
-      <label className="text-xs font-medium text-muted-foreground">{label}</label>
+      <label htmlFor={id} className="text-xs font-medium text-muted-foreground">{label}</label>
       <input
-        type={type} value={value} readOnly={readOnly} max={max}
+        id={id} type={type} value={value} readOnly={readOnly} max={max}
         onChange={onChange ? (e) => onChange(e.target.value) : undefined}
         className={`mt-1 w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 read-only:bg-muted read-only:text-muted-foreground ${
           error ? 'border-destructive' : ''
