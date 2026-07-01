@@ -2,6 +2,7 @@
 # Question banks, answer keys, scoring and the report template stay local only.
 *.xlsx
 *.docx
+*.csv
 ~$*
 # Parsed content (contains answer keys) — load into Supabase, never commit
 content/
