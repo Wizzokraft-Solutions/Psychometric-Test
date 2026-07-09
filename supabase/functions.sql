@@ -20,6 +20,7 @@ declare
   v_set        int;
   v_q          int;
   v_choice     text;
+  v_opt_text   text;
   v_points     int;
   v_section    text;
   v_total      int   := 0;
@@ -50,6 +51,14 @@ begin
     select section into v_section
       from questions where set = v_set and role = p_role limit 1;
 
+    -- snapshot the exact option text the user chose, so the stored answer is
+    -- immutable and never re-resolves against later question edits.
+    select opt->>'text' into v_opt_text
+      from questions q, jsonb_array_elements(q.options) opt
+      where q.set = v_set and q.role = p_role and q.number = v_q
+        and opt->>'key' = v_choice
+      limit 1;
+
     select (points->>v_choice)::int into v_points
       from answer_keys where set = v_set and role = p_role and question = v_q;
     v_points := coalesce(v_points, 0);
@@ -59,6 +68,7 @@ begin
                   to_jsonb(coalesce((v_scores->>v_section)::int, 0) + v_points));
     v_scored := v_scored || jsonb_build_object(
                   'set', v_set, 'question', v_q, 'choice', v_choice,
+                  'text', v_opt_text,
                   'points', v_points, 'section', v_section);
   end loop;
 

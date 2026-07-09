@@ -284,13 +284,15 @@ function AnswerDetail({ submission, qLookup }: { submission: Submission; qLookup
               <tbody>
                 {arr.map((a) => {
                   const q = qLookup.get(`${submission.role}-${a.set}-${a.question}`)
-                  const opt = q?.options.find((o) => o.key === a.choice)
+                  // Prefer the option text snapshotted at submit time; fall back to
+                  // a live lookup only for older rows saved before snapshots existed.
+                  const chosenText = a.text ?? q?.options.find((o) => o.key === a.choice)?.text
                   return (
                     <tr key={a.question} className="border-t align-top">
                       <Td>{a.question}</Td>
                       <td className="min-w-[12rem] px-3 py-2 align-top whitespace-normal">
                         <div>{q?.text ?? `Q${a.question}`}</div>
-                        {opt && <div className="text-muted-foreground">{a.choice}. {opt.text}</div>}
+                        {chosenText && <div className="text-muted-foreground">{a.choice}. {chosenText}</div>}
                       </td>
                       <Td>{a.choice}</Td>
                       <Td>{a.points}</Td>

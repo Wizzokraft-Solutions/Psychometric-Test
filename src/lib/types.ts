@@ -28,8 +28,10 @@ export type EmployeeForm = {
 // One answer the user gives
 export type Answer = { set: number; question: number; choice: 'A' | 'B' | 'C' | 'D' }
 
-// Answer enriched by the server with awarded points (stored on the submission)
-export type ScoredAnswer = Answer & { points: number; section: string }
+// Answer enriched by the server with awarded points (stored on the submission).
+// `text` is a snapshot of the chosen option's text at submit time, so the
+// recorded answer never drifts if the question is later edited.
+export type ScoredAnswer = Answer & { points: number; section: string; text?: string }
 
 export type Submission = {
   id: string

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Check, ChevronRight, PartyPopper } from 'lucide-react'
+import { Check, ChevronLeft, ChevronRight, PartyPopper } from 'lucide-react'
 import Header from '@/components/Header'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
@@ -76,6 +76,9 @@ export default function QuizPage() {
     if (justFinishedTen && !isLast) { setShowBreak(true); return }
     if (isLast) { void submit(); return }
     setIndex((i) => i + 1)
+  }
+  function prev() {
+    setIndex((i) => Math.max(0, i - 1))
   }
   function continueAfterBreak() {
     setShowBreak(false)
@@ -176,8 +179,11 @@ export default function QuizPage() {
 
         {submitErr && <p className="mt-4 text-sm text-destructive">Could not submit: {submitErr}</p>}
 
-        <div className="mt-6 flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">{answeredCount}/{total} answered</span>
+        <div className="mt-6 flex items-center justify-between gap-3">
+          <Button size="lg" variant="outline" disabled={index === 0 || submitting} onClick={prev}>
+            <ChevronLeft className="size-4" /> Back
+          </Button>
+          <span className="hidden text-xs text-muted-foreground sm:inline">{answeredCount}/{total} answered</span>
           <Button size="lg" disabled={!answers[question.id] || submitting} onClick={next}>
             {submitting ? 'Submitting…' : isLast ? 'Submit' : 'Next'}
             {!submitting && <ChevronRight className="size-4" />}
