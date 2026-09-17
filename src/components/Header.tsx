@@ -19,7 +19,7 @@ export default function Header() {
           />
           <span className="text-sm font-semibold tracking-tight sm:text-base">
             <span className="brand-text-gradient">Wizzokraft</span>
-            <span className="hidden text-muted-foreground sm:inline"> Psychometric Test</span>
+            <span className="hidden text-muted-foreground sm:inline"> Self Assessment</span>
           </span>
         </Link>
       </div>

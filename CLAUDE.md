@@ -1,9 +1,10 @@
-# CLAUDE.md — Wizzokraft Psychometric Test
+# CLAUDE.md — Wizzokraft Self Assessment
 
 Guidance for Claude Code when working in this repository.
 
 ## Day-wise survey (updated 2026-09-17) — REPLACES the 60-question scored test
 
+- **Name:** "Self Assessment" in the UI (renamed 2026-09-17). The repo/URL path stays `Psychometric-Test`.
 - Source: `DAY 1.docx`, `DAY 2.docx`, `DAY 3.docx` (gitignored). Same 30 questions each day, different order. No options/keys in the docs.
 - Answers: 5-point scale Highly Agree(5) / Slightly Agree(4) / Neutral(3) / Disagree(2) / Highly Disagree(1). **No scoring yet — scored manually** from the admin Excel export.
 - `question_no` = position in DAY 1 (stable across days); `position` = order shown that day.
@@ -56,7 +57,7 @@ Originally the correct answer was always option **B** (a giveaway). `SWAPING.doc
 
 ## What this project is
 
-A web app for the **Wizzokraft Psychometric Test** with two flows:
+A web app for the **Wizzokraft Self Assessment** (formerly Psychometric Test) with two flows:
 
 - **User flow:** landing page (pick employee from a searchable list → fill the GEN DATA form → choose role) → 60-question multiple-choice quiz → auto-scored on submit.
 - **Admin flow:** password-gated reports page (employees-per-boss segment table, master results table, per-employee drill-down with interpretations, and an answer-detail popup).
@@ -110,7 +111,7 @@ Each folder contains 4 files:
 
 ## Assets
 
-- `Assets/Logo.png` — Wizzokraft logo for the landing header. Title text: "Wizzokraft Psychometric Test."
+- `Assets/Logo.png` — Wizzokraft logo for the landing header. Title text: "Wizzokraft Self Assessment."
 
 ## Conventions & gotchas
 

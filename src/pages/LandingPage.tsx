@@ -57,7 +57,7 @@ export default function LandingPage() {
             {survey?.day != null && <> · Day {survey.day}</>}
           </span>
           <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-5xl">
-            <span className="brand-text-gradient">Psychometric</span> Assessment
+            <span className="brand-text-gradient">Self</span> Assessment
           </h1>
           <p className="mt-3 max-w-xl text-sm text-muted-foreground sm:text-base">
             Fill in your details to begin. It takes about 5–10 minutes.
