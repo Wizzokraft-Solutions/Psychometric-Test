@@ -27,3 +27,6 @@ Thumbs.db
 
 # GitHub Actions workflow � re-enable after 'gh auth refresh -s workflow'
 .github/
+
+# Cloudflare Wrangler local state
+.wrangler/

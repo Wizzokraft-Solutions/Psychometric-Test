@@ -1,13 +1,17 @@
-// Export an array of plain objects as a single-sheet .xlsx download.
+// Export arrays of plain objects as an .xlsx download (one sheet per entry).
 // xlsx is loaded lazily so it isn't in the initial bundle.
-export async function exportRows(
-  rows: Record<string, unknown>[],
-  sheetName: string,
+export async function exportSheets(
+  sheets: { name: string; rows: Record<string, unknown>[] }[],
   fileName: string,
 ) {
   const XLSX = await import('xlsx')
-  const ws = XLSX.utils.json_to_sheet(rows)
   const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, sheetName.slice(0, 31))
+  for (const s of sheets) {
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(s.rows), s.name.slice(0, 31))
+  }
   XLSX.writeFile(wb, fileName)
+}
+
+export function exportRows(rows: Record<string, unknown>[], sheetName: string, fileName: string) {
+  return exportSheets([{ name: sheetName, rows }], fileName)
 }

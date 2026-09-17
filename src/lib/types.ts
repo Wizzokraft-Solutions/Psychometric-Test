@@ -1,77 +1,58 @@
-export type Role = 'manager' | 'others'
+// A question as asked on the open day.
+//   position    = order shown that day
+//   question_no = number in DAY 1 (stable across days)
+export type SurveyQuestion = { position: number; question_no: number; text: string }
 
-export type Option = { key: 'A' | 'B' | 'C' | 'D'; text: string }
+// Result of the get_survey RPC. day is null when the test is closed.
+export type Survey = { day: number | null; questions: SurveyQuestion[] }
 
-export type Question = {
-  id: number
-  set: number
-  section: string
-  role: Role
-  number: number
-  text: string
-  options: Option[]
-}
-
-export type Employee = { emp_no: string; name: string }
-
-// GEN DATA form (fields from Report Format.xlsx)
-export type EmployeeForm = {
-  emp_no: string
+// Details the person enters before the test. Name + DOB identify them.
+export type PersonForm = {
   name: string
   dob: string
   designation: string
   department: string
-  boss: string
-  tenure: string
 }
 
-// One answer the user gives
-export type Answer = { set: number; question: number; choice: 'A' | 'B' | 'C' | 'D' }
+export type AnswerValue = 1 | 2 | 3 | 4 | 5
 
-// Answer enriched by the server with awarded points (stored on the submission).
-// `text` is a snapshot of the chosen option's text at submit time, so the
-// recorded answer never drifts if the question is later edited.
-export type ScoredAnswer = Answer & { points: number; section: string; text?: string }
+// Highest agreement first, as shown to the user.
+export const SCALE: { value: AnswerValue; label: string }[] = [
+  { value: 5, label: 'Highly Agree' },
+  { value: 4, label: 'Slightly Agree' },
+  { value: 3, label: 'Neutral' },
+  { value: 2, label: 'Disagree' },
+  { value: 1, label: 'Highly Disagree' },
+]
+
+// Answer as stored on a submission (snapshot of the question text at submit time).
+export type StoredAnswer = {
+  question_no: number
+  position: number
+  text: string
+  value: AnswerValue
+  label: string
+}
 
 export type Submission = {
   id: string
   created_at: string
-  emp_no: string
+  day: number
   name: string
-  dob: string | null
-  designation: string
-  department: string
-  boss: string
-  tenure: string
-  role: Role
-  answers: ScoredAnswer[]
-  section_scores: Record<string, number>
-  interpretations: Record<string, string>
-  total: number
+  dob: string
+  designation: string | null
+  department: string | null
+  answers: StoredAnswer[]
 }
 
-// Result returned by the submit_quiz RPC
-export type QuizResult = {
-  id: string
-  total: number
-  section_scores: Record<string, number>
-  interpretations: Record<string, string>
+export type AdminData = {
+  active_day: number | null
+  questions: { question_no: number; text: string }[]
+  submissions: Submission[]
 }
 
-export const SECTION_ORDER = [
-  'Technical Skills',
-  'Problem Solving Skills',
-  'Communication Skills',
-  'Team Work & Collaboration Skills',
-  'Customer Focus',
-  'Learning Agility',
-] as const
-
+// Shown after every 10 questions.
 export const MOTIVATIONS = [
   'Great start — keep the momentum going! 🚀',
-  "You're a third of the way there. Stay sharp! 💪",
-  'Halfway done — you’re doing brilliantly! 🌟',
-  'Two-thirds in. Keep it up! 🔥',
-  'Almost there — finish strong! 🏁',
-  'Last stretch — you’ve got this! 🎉',
+  'Two-thirds done — finish strong! 🔥',
 ]

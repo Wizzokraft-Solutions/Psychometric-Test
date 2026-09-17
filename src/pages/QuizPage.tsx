@@ -5,51 +5,57 @@ import { Check, ChevronLeft, ChevronRight, PartyPopper } from 'lucide-react'
 import Header from '@/components/Header'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
-import { MOTIVATIONS, type Answer, type EmployeeForm, type Question, type Role } from '@/lib/types'
+import {
+  MOTIVATIONS, SCALE,
+  type AnswerValue, type PersonForm, type Survey, type SurveyQuestion,
+} from '@/lib/types'
 
-type QuizState = { form?: EmployeeForm; role?: Role }
-type Choice = 'A' | 'B' | 'C' | 'D'
+type QuizState = { form?: PersonForm }
 
 export default function QuizPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { form, role } = (location.state as QuizState) ?? {}
+  const { form } = (location.state as QuizState) ?? {}
 
-  const [questions, setQuestions] = useState<Question[]>([])
+  const [day, setDay] = useState<number | null>(null)
+  const [questions, setQuestions] = useState<SurveyQuestion[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [index, setIndex] = useState(0)
-  const [answers, setAnswers] = useState<Record<number, Choice>>({})
+  const [answers, setAnswers] = useState<Record<number, AnswerValue>>({}) // question_no -> value
   const [showBreak, setShowBreak] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitErr, setSubmitErr] = useState<string | null>(null)
-  const [done, setDone] = useState(false)
-  const [already, setAlready] = useState(false)
+  const [done, setDone] = useState<null | 'ok' | 'already'>(null)
 
   useEffect(() => {
-    if (!role) return
-    supabase
-      .from('questions').select('*').eq('role', role)
-      .order('set', { ascending: true }).order('number', { ascending: true })
-      .then(({ data, error }) => {
-        if (error) setLoadError(error.message)
-        else setQuestions((data as Question[]) ?? [])
-        setLoading(false)
-      })
-  }, [role])
+    if (!form) return
+    supabase.rpc('get_survey').then(({ data, error }) => {
+      if (error) setLoadError(error.message)
+      else {
+        const s = data as Survey
+        setDay(s.day)
+        setQuestions(s.questions ?? [])
+      }
+      setLoading(false)
+    })
+  }, [form])
 
   const total = questions.length
   const question = questions[index]
   const isLast = index === total - 1
   const answeredCount = useMemo(() => Object.keys(answers).length, [answers])
 
-  if (!role || !form) {
-    return <Shell><p className="text-muted-foreground">No category selected. Please start from the landing page.</p>
+  if (!form) {
+    return <Shell><p className="text-muted-foreground">No details entered. Please start from the landing page.</p>
       <Button className="mt-4" onClick={() => navigate('/')}>Go to start</Button></Shell>
   }
   if (loading) return <Shell><p className="text-muted-foreground">Loading your assessment…</p></Shell>
   if (loadError) return <Shell><p className="text-destructive">Failed to load: {loadError}</p></Shell>
-  if (total === 0) return <Shell><p className="text-muted-foreground">No questions found for this category.</p></Shell>
+  if (day == null || total === 0) {
+    return <Shell><p className="text-muted-foreground">The assessment is not open right now.</p>
+      <Button className="mt-4" onClick={() => navigate('/')}>Go to start</Button></Shell>
+  }
 
   if (done) {
     return (
@@ -59,8 +65,8 @@ export default function QuizPage() {
         </motion.div>
         <h1 className="mt-4 text-3xl font-bold">Thank you! 🎉</h1>
         <p className="mt-2 text-muted-foreground">
-          {already
-            ? 'This assessment was already completed for your record. You may now close this page.'
+          {done === 'already'
+            ? 'You have already completed today’s assessment. You may now close this page.'
             : 'Your responses have been recorded. You may now close this page.'}
         </p>
         <Button className="mt-6" onClick={() => navigate('/')}>Done</Button>
@@ -68,13 +74,12 @@ export default function QuizPage() {
     )
   }
 
-  function choose(key: Choice) {
-    setAnswers((a) => ({ ...a, [question.id]: key }))
+  function choose(value: AnswerValue) {
+    setAnswers((a) => ({ ...a, [question.question_no]: value }))
   }
   function next() {
-    const justFinishedTen = (index + 1) % 10 === 0
-    if (justFinishedTen && !isLast) { setShowBreak(true); return }
     if (isLast) { void submit(); return }
+    if ((index + 1) % 10 === 0) { setShowBreak(true); return }
     setIndex((i) => i + 1)
   }
   function prev() {
@@ -86,18 +91,21 @@ export default function QuizPage() {
   }
   async function submit() {
     setSubmitting(true); setSubmitErr(null)
-    const payload: Answer[] = questions.map((q) => ({ set: q.set, question: q.number, choice: answers[q.id] }))
-    const { error } = await supabase.rpc('submit_quiz', { p_employee: form, p_role: role, p_answers: payload })
+    const payload = questions.map((q) => ({ question_no: q.question_no, value: answers[q.question_no] }))
+    const { error } = await supabase.rpc('submit_survey', { p_person: form, p_answers: payload })
     setSubmitting(false)
     if (error) {
-      if (error.message?.toLowerCase().includes('already_submitted')) { setAlready(true); setDone(true); return }
+      const msg = error.message?.toLowerCase() ?? ''
+      if (msg.includes('already_submitted')) { setDone('already'); return }
+      if (msg.includes('survey_closed')) { setSubmitErr('The assessment was closed before you submitted.'); return }
       setSubmitErr(error.message); return
     }
-    setDone(true)
+    setDone('ok')
   }
 
   if (showBreak) {
     const milestone = Math.ceil((index + 1) / 10)
+    const message = MOTIVATIONS[milestone - 1] ?? 'Keep going! ✨'
     return (
       <Shell>
         <motion.div
@@ -106,10 +114,10 @@ export default function QuizPage() {
           transition={{ type: 'spring', stiffness: 180, damping: 12 }}
           className="text-5xl"
         >
-          {MOTIVATIONS[milestone - 1]?.match(/\p{Emoji}/u)?.[0] ?? '✨'}
+          {message.match(/\p{Emoji_Presentation}/u)?.[0] ?? '✨'}
         </motion.div>
         <motion.h2 initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mt-4 text-2xl font-bold">
-          {MOTIVATIONS[milestone - 1]}
+          {message}
         </motion.h2>
         <p className="mt-2 text-muted-foreground">{milestone * 10} of {total} questions complete.</p>
         <div className="mx-auto mt-4 h-2 w-56 overflow-hidden rounded-full bg-muted">
@@ -120,6 +128,8 @@ export default function QuizPage() {
     )
   }
 
+  const current = answers[question.question_no]
+
   return (
     <div className="app-bg min-h-svh">
       <Header />
@@ -127,7 +137,7 @@ export default function QuizPage() {
         <div className="flex items-center justify-between text-sm">
           <span className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-medium">
             <span className="brand-gradient h-2 w-2 rounded-full" />
-            {role === 'manager' ? 'Manager & Above' : 'Others'}
+            Day {day}
           </span>
           <span className="text-muted-foreground">Question {index + 1} of {total}</span>
         </div>
@@ -143,7 +153,7 @@ export default function QuizPage() {
 
         <AnimatePresence mode="wait">
           <motion.div
-            key={question.id}
+            key={question.position}
             initial={{ opacity: 0, x: 24 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -24 }}
@@ -152,14 +162,14 @@ export default function QuizPage() {
           >
             <h2 className="text-lg font-medium leading-relaxed">{question.text}</h2>
             <div className="mt-5 space-y-2.5">
-              {question.options.map((o) => {
-                const active = answers[question.id] === o.key
+              {SCALE.map((o) => {
+                const active = current === o.value
                 return (
                   <button
-                    key={o.key}
+                    key={o.value}
                     type="button"
                     data-testid="option"
-                    onClick={() => choose(o.key)}
+                    onClick={() => choose(o.value)}
                     className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm transition-all hover:-translate-y-px ${
                       active ? 'border-primary bg-accent brand-ring' : 'hover:border-primary/40 hover:shadow-sm'
                     }`}
@@ -167,9 +177,9 @@ export default function QuizPage() {
                     <span className={`flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors ${
                       active ? 'brand-gradient text-white' : 'bg-muted text-muted-foreground'
                     }`}>
-                      {active ? <Check className="size-4" /> : o.key}
+                      {active && <Check className="size-4" />}
                     </span>
-                    <span>{o.text}</span>
+                    <span>{o.label}</span>
                   </button>
                 )
               })}
@@ -184,7 +194,7 @@ export default function QuizPage() {
             <ChevronLeft className="size-4" /> Back
           </Button>
           <span className="hidden text-xs text-muted-foreground sm:inline">{answeredCount}/{total} answered</span>
-          <Button size="lg" disabled={!answers[question.id] || submitting} onClick={next}>
+          <Button size="lg" disabled={!current || submitting} onClick={next}>
             {submitting ? 'Submitting…' : isLast ? 'Submit' : 'Next'}
             {!submitting && <ChevronRight className="size-4" />}
           </Button>

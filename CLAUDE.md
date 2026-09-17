@@ -2,7 +2,19 @@
 
 Guidance for Claude Code when working in this repository.
 
-## Current state (updated 2026-07-01)
+## Day-wise survey (updated 2026-09-17) — REPLACES the 60-question scored test
+
+- Source: `DAY 1.docx`, `DAY 2.docx`, `DAY 3.docx` (gitignored). Same 30 questions each day, different order. No options/keys in the docs.
+- Answers: 5-point scale Highly Agree(5) / Slightly Agree(4) / Neutral(3) / Disagree(2) / Highly Disagree(1). **No scoring yet — scored manually** from the admin Excel export.
+- `question_no` = position in DAY 1 (stable across days); `position` = order shown that day.
+- No employee list and no Emp No./boss/tenure/role. People enter only **Name, Date of Birth, Designation, Department**. One submission per **Name + DOB per day** (name compared case- and space-insensitively via `survey_person_key`).
+- Admin opens/closes days (`set_active_day`); the day is never chosen by the browser.
+- DB: `supabase/survey.sql` (tables `survey_questions`, `survey_settings`, `survey_submissions` + RPCs `get_survey`, `has_submitted_survey`, `submit_survey`, `get_survey_admin_data`, `set_active_day`). Questions seed: `node scripts/parse-survey.mjs` → `content/survey-seed.sql`, paste into SQL Editor.
+- Old test tables (`questions`, `answer_keys`, `interpretations`, `submissions`, `employees`) and their functions were **dropped on 2026-09-17**. JSON backups: `source-backup/old-test-*-2026-09-17.json` (local only). `admin_config` was kept (survey admin uses it). Sections below describe the OLD test.
+- Supabase is reached via the Cloudflare Worker proxy `https://wizzokraft-db.wizzokraft.workers.dev` (`proxy/`, deploy with `npx wrangler deploy`) because some ISPs block `*.supabase.co`. `VITE_SUPABASE_URL` points at the proxy.
+- `npm run e2e` mocks all RPCs (`e2e/survey.spec.ts`); only needs `VITE_SUPABASE_*` set (any values).
+
+## Previous state (2026-07-01, old test)
 
 - **Live site:** https://wizzokraft-solutions.github.io/Psychometric-Test/
 - **Repo:** `Wizzokraft-Solutions/Psychometric-Test` (public). `main` = source, `gh-pages` = built site.
