@@ -11,6 +11,14 @@ import type { AdminData, Submission } from '@/lib/types'
 const DAYS = [1, 2, 3] as const
 type DayFilter = 'all' | (typeof DAYS)[number]
 
+// Submission time is stored in UTC; always show it in IST so the admin page and
+// the Excel export read the same regardless of the viewer's timezone.
+const TZ = 'Asia/Kolkata'
+const fmtDate = (iso: string) =>
+  new Date(iso).toLocaleDateString('en-GB', { timeZone: TZ, day: '2-digit', month: 'short', year: 'numeric' })
+const fmtTime = (iso: string) =>
+  new Date(iso).toLocaleTimeString('en-IN', { timeZone: TZ, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }).toUpperCase()
+
 export default function AdminPage() {
   const [pw, setPw] = useState('')
   const [authed, setAuthed] = useState(false)
@@ -104,7 +112,8 @@ export default function AdminPage() {
       const byNo = new Map(s.answers.map((a) => [a.question_no, a]))
       return {
         Day: s.day,
-        'Submitted At': new Date(s.created_at).toLocaleString(),
+        'Date (IST)': fmtDate(s.created_at),
+        'Time (IST)': fmtTime(s.created_at),
         Name: s.name,
         'Date of Birth': s.dob,
         Designation: s.designation ?? '',
@@ -171,7 +180,7 @@ export default function AdminPage() {
           <table className="w-full text-sm">
             <thead className="bg-muted">
               <tr>
-                <Th>Day</Th><Th>Name</Th><Th>DOB</Th><Th>Designation</Th><Th>Department</Th><Th>Submitted</Th><Th></Th>
+                <Th>Day</Th><Th>Name</Th><Th>DOB</Th><Th>Designation</Th><Th>Department</Th><Th>Date</Th><Th>Time (IST)</Th><Th></Th>
               </tr>
             </thead>
             <tbody>
@@ -179,17 +188,17 @@ export default function AdminPage() {
                 <tr key={s.id} className="border-t hover:bg-accent/40">
                   <Td>{s.day}</Td><Td>{s.name}</Td><Td>{s.dob}</Td>
                   <Td>{s.designation}</Td><Td>{s.department}</Td>
-                  <Td>{new Date(s.created_at).toLocaleString()}</Td>
+                  <Td>{fmtDate(s.created_at)}</Td><Td>{fmtTime(s.created_at)}</Td>
                   <Td><Button size="sm" variant="outline" onClick={() => setSelected(s)}>View answers</Button></Td>
                 </tr>
               ))}
-              {filtered.length === 0 && <tr><Td colSpan={7}>No results yet.</Td></tr>}
+              {filtered.length === 0 && <tr><Td colSpan={8}>No results yet.</Td></tr>}
             </tbody>
           </table>
         </div>
 
         <Modal open={!!selected} onClose={() => setSelected(null)}
-          title={selected ? `Day ${selected.day} — ${selected.name}` : ''}>
+          title={selected ? `Day ${selected.day} — ${selected.name} · ${fmtDate(selected.created_at)}, ${fmtTime(selected.created_at)} IST` : ''}>
           {selected && <AnswerDetail submission={selected} />}
         </Modal>
       </main>
