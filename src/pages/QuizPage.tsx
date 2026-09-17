@@ -97,6 +97,7 @@ export default function QuizPage() {
     if (error) {
       const msg = error.message?.toLowerCase() ?? ''
       if (msg.includes('already_submitted')) { setDone('already'); return }
+      if (msg.includes('invalid_mobile')) { setSubmitErr('Your mobile number is invalid. Please go back and correct it.'); return }
       if (msg.includes('survey_closed')) { setSubmitErr('The assessment was closed before you submitted.'); return }
       setSubmitErr(error.message); return
     }

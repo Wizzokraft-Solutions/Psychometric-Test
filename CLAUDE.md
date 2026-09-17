@@ -8,7 +8,7 @@ Guidance for Claude Code when working in this repository.
 - Source: `DAY 1.docx`, `DAY 2.docx`, `DAY 3.docx` (gitignored). Same 30 questions each day, different order. No options/keys in the docs.
 - Answers: 5-point scale Highly Agree(5) / Slightly Agree(4) / Neutral(3) / Disagree(2) / Highly Disagree(1). **No scoring yet — scored manually** from the admin Excel export.
 - `question_no` = position in DAY 1 (stable across days); `position` = order shown that day.
-- No employee list and no Emp No./boss/tenure/role. People enter only **Name, Date of Birth, Designation, Department**. One submission per **Name + DOB per day** (name compared case- and space-insensitively via `survey_person_key`).
+- No employee list and no Emp No./boss/tenure/role. People enter only **Name, Mobile Number (10-digit Indian, stored normalized), Date of Birth, Designation, Department**. One submission per **Name + DOB per day** (name compared case- and space-insensitively via `survey_person_key`).
 - Admin opens/closes days (`set_active_day`); the day is never chosen by the browser.
 - DB: `supabase/survey.sql` (tables `survey_questions`, `survey_settings`, `survey_submissions` + RPCs `get_survey`, `has_submitted_survey`, `submit_survey`, `get_survey_admin_data`, `set_active_day`). Questions seed: `node scripts/parse-survey.mjs` → `content/survey-seed.sql`, paste into SQL Editor.
 - Old test tables (`questions`, `answer_keys`, `interpretations`, `submissions`, `employees`) and their functions were **dropped on 2026-09-17**. JSON backups: `source-backup/old-test-*-2026-09-17.json` (local only). `admin_config` was kept (survey admin uses it). Sections below describe the OLD test.

@@ -37,6 +37,7 @@ create table if not exists survey_submissions (
   created_at  timestamp not null default (now() at time zone 'Asia/Kolkata'),
   day         int  not null check (day between 1 and 3),
   name        text not null,
+  mobile      text not null check (mobile ~ '^[6-9][0-9]{9}$'),  -- 10-digit Indian mobile
   dob         date not null,
   designation text,
   department  text,
@@ -114,7 +115,7 @@ $$;
 grant execute on function has_submitted_survey(text, date) to anon, authenticated;
 
 -- submit_survey
---   p_person  : { name, dob, designation, department }
+--   p_person  : { name, mobile, dob, designation, department }
 --   p_answers : [ { "question_no": 1, "value": 5 }, ... ]  (all 30, value 1..5)
 -- The day is taken from survey_settings, never from the browser.
 create or replace function submit_survey(p_person jsonb, p_answers jsonb)
@@ -126,6 +127,8 @@ as $$
 declare
   v_day     int;
   v_name    text := nullif(regexp_replace(trim(p_person->>'name'), '\s+', ' ', 'g'), '');
+  -- digits only, then drop a leading 91 / 0 country or trunk prefix
+  v_mobile  text := regexp_replace(regexp_replace(coalesce(p_person->>'mobile', ''), '\D', '', 'g'), '^(91|0)(?=\d{10}$)', '');
   v_dob     date := nullif(p_person->>'dob', '')::date;
   v_total   int;
   v_answers jsonb;
@@ -137,6 +140,9 @@ begin
   end if;
   if v_name is null or v_dob is null then
     raise exception 'name and dob are required';
+  end if;
+  if v_mobile !~ '^[6-9]\d{9}$' then
+    raise exception 'invalid_mobile';
   end if;
   if exists (select 1 from survey_submissions
              where day = v_day and survey_person_key(name) = survey_person_key(v_name) and dob = v_dob) then
@@ -166,9 +172,9 @@ begin
     raise exception 'incomplete_answers: got %, expected %', jsonb_array_length(v_answers), v_total;
   end if;
 
-  insert into survey_submissions (day, name, dob, designation, department, answers)
+  insert into survey_submissions (day, name, mobile, dob, designation, department, answers)
   values (
-    v_day, v_name, v_dob,
+    v_day, v_name, v_mobile, v_dob,
     nullif(trim(p_person->>'designation'), ''),
     nullif(trim(p_person->>'department'), ''),
     v_answers

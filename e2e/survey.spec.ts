@@ -37,6 +37,7 @@ async function mockSupabase(page: Page, mock: Mock) {
 
 async function fillDetails(page: Page) {
   await page.getByLabel(/^Name/).fill('Test Person')
+  await page.getByLabel(/^Mobile Number/).fill('+91 98765 43210')
   await page.getByLabel('Date of Birth').fill('1995-05-05')
   await page.getByLabel('Designation').fill('Analyst')
   await page.getByLabel('Department').fill('Operations')
@@ -59,6 +60,16 @@ test('validation blocks starting until required fields are filled', async ({ pag
   await page.goto('')
   await page.getByRole('button', { name: /Start Test/i }).click()
   await expect(page.getByText(/complete all required fields/i)).toBeVisible()
+  await expect(page).not.toHaveURL(/#\/quiz/)
+})
+
+test('invalid mobile number blocks starting', async ({ page }) => {
+  await mockSupabase(page, { day: 2 })
+  await page.goto('')
+  await fillDetails(page)
+  await page.getByLabel(/^Mobile Number/).fill('12345')
+  await page.getByRole('button', { name: /Start Test/i }).click()
+  await expect(page.getByText(/valid 10-digit mobile/i)).toBeVisible()
   await expect(page).not.toHaveURL(/#\/quiz/)
 })
 
@@ -96,7 +107,7 @@ test('full flow: 30 questions, 5 options, breaks, submits every answer', async (
 
   expect(submitted).toHaveLength(1)
   const { p_answers, p_person } = submitted[0]
-  expect(p_person).toEqual({ name: 'Test Person', dob: '1995-05-05', designation: 'Analyst', department: 'Operations' })
+  expect(p_person).toEqual({ name: 'Test Person', mobile: '9876543210', dob: '1995-05-05', designation: 'Analyst', department: 'Operations' })
   expect(p_answers).toHaveLength(30)
   // first question asked (question_no 30) got "Highly Agree" = 5, second got 4
   expect(p_answers.find((a) => a.question_no === 30)?.value).toBe(5)

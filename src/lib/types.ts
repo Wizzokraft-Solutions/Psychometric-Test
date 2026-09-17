@@ -9,6 +9,7 @@ export type Survey = { day: number | null; questions: SurveyQuestion[] }
 // Details the person enters before the test. Name + DOB identify them.
 export type PersonForm = {
   name: string
+  mobile: string
   dob: string
   designation: string
   department: string
@@ -39,6 +40,7 @@ export type Submission = {
   created_at: string // IST, no timezone suffix
   day: number
   name: string
+  mobile: string
   dob: string
   designation: string | null
   department: string | null

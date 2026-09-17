@@ -122,6 +122,7 @@ export default function AdminPage() {
         'Date (IST)': fmtDate(s.created_at),
         'Time (IST)': fmtTime(s.created_at),
         Name: s.name,
+        Mobile: s.mobile,
         'Date of Birth': s.dob,
         Designation: s.designation ?? '',
         Department: s.department ?? '',
@@ -187,19 +188,19 @@ export default function AdminPage() {
           <table className="w-full text-sm">
             <thead className="bg-muted">
               <tr>
-                <Th>Day</Th><Th>Name</Th><Th>DOB</Th><Th>Designation</Th><Th>Department</Th><Th>Date</Th><Th>Time (IST)</Th><Th></Th>
+                <Th>Day</Th><Th>Name</Th><Th>Mobile</Th><Th>DOB</Th><Th>Designation</Th><Th>Department</Th><Th>Date</Th><Th>Time (IST)</Th><Th></Th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((s) => (
                 <tr key={s.id} className="border-t hover:bg-accent/40">
-                  <Td>{s.day}</Td><Td>{s.name}</Td><Td>{s.dob}</Td>
+                  <Td>{s.day}</Td><Td>{s.name}</Td><Td>{s.mobile}</Td><Td>{s.dob}</Td>
                   <Td>{s.designation}</Td><Td>{s.department}</Td>
                   <Td>{fmtDate(s.created_at)}</Td><Td>{fmtTime(s.created_at)}</Td>
                   <Td><Button size="sm" variant="outline" onClick={() => setSelected(s)}>View answers</Button></Td>
                 </tr>
               ))}
-              {filtered.length === 0 && <tr><Td colSpan={8}>No results yet.</Td></tr>}
+              {filtered.length === 0 && <tr><Td colSpan={9}>No results yet.</Td></tr>}
             </tbody>
           </table>
         </div>

@@ -7,8 +7,14 @@ import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import type { PersonForm, Survey } from '@/lib/types'
 
-const EMPTY_FORM: PersonForm = { name: '', dob: '', designation: '', department: '' }
-const REQUIRED: (keyof PersonForm)[] = ['name', 'dob', 'designation', 'department']
+const EMPTY_FORM: PersonForm = { name: '', mobile: '', dob: '', designation: '', department: '' }
+const REQUIRED: (keyof PersonForm)[] = ['name', 'mobile', 'dob', 'designation', 'department']
+
+// Digits only, minus a leading +91 / 0. Mirrors the check in submit_survey.
+function normalizeMobile(raw: string) {
+  return raw.replace(/\D/g, '').replace(/^(91|0)(?=\d{10}$)/, '')
+}
+const isValidMobile = (raw: string) => /^[6-9]\d{9}$/.test(normalizeMobile(raw))
 const today = new Date().toISOString().slice(0, 10)
 
 export default function LandingPage() {
@@ -29,7 +35,8 @@ export default function LandingPage() {
 
   const missing = useMemo(() => REQUIRED.filter((k) => !form[k].trim()), [form])
   const dobInFuture = !!form.dob && form.dob > today
-  const formValid = missing.length === 0 && !dobInFuture
+  const mobileInvalid = !!form.mobile.trim() && !isValidMobile(form.mobile)
+  const formValid = missing.length === 0 && !dobInFuture && !mobileInvalid
 
   function set<K extends keyof PersonForm>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }))
@@ -42,7 +49,7 @@ export default function LandingPage() {
     const { data } = await supabase.rpc('has_submitted_survey', { p_name: form.name.trim(), p_dob: form.dob })
     setChecking(false)
     if (data === true) { setAlreadyDone(true); return }
-    navigate('/quiz', { state: { form } })
+    navigate('/quiz', { state: { form: { ...form, mobile: normalizeMobile(form.mobile) } } })
   }
 
   const closed = survey && survey.day == null
@@ -86,6 +93,9 @@ export default function LandingPage() {
             <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Name" value={form.name} onChange={(v) => set('name', v)} required
                 error={attempted && !form.name.trim() ? 'Required' : ''} />
+              <Field label="Mobile Number" type="tel" inputMode="numeric" autoComplete="tel" value={form.mobile}
+                onChange={(v) => set('mobile', v)} required placeholder="10-digit mobile number"
+                error={attempted && !form.mobile.trim() ? 'Required' : attempted && mobileInvalid ? 'Enter a valid 10-digit mobile number' : ''} />
               <Field label="Date of Birth" type="date" max={today} value={form.dob} onChange={(v) => set('dob', v)} required
                 error={attempted && !form.dob ? 'Required' : dobInFuture ? 'Cannot be in the future' : ''} />
               <Field label="Designation" value={form.designation} onChange={(v) => set('designation', v)} required
@@ -114,8 +124,9 @@ export default function LandingPage() {
   )
 }
 
-function Field({ label, type = 'text', value, onChange, error, max, required }: {
+function Field({ label, type = 'text', value, onChange, error, max, required, placeholder, inputMode, autoComplete }: {
   label: string; type?: string; value: string; onChange: (v: string) => void; error?: string; max?: string; required?: boolean
+  placeholder?: string; inputMode?: React.HTMLAttributes<HTMLInputElement>['inputMode']; autoComplete?: string
 }) {
   const id = 'f-' + label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
   return (
@@ -124,7 +135,7 @@ function Field({ label, type = 'text', value, onChange, error, max, required }: 
         {label}{required && <span className="text-destructive"> *</span>}
       </label>
       <input
-        id={id} type={type} value={value} max={max}
+        id={id} type={type} value={value} max={max} placeholder={placeholder} inputMode={inputMode} autoComplete={autoComplete}
         onChange={(e) => onChange(e.target.value)}
         className={`mt-1 w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 ${
           error ? 'border-destructive' : ''
