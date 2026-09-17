@@ -11,13 +11,20 @@ import type { AdminData, Submission } from '@/lib/types'
 const DAYS = [1, 2, 3] as const
 type DayFilter = 'all' | (typeof DAYS)[number]
 
-// Submission time is stored in UTC; always show it in IST so the admin page and
-// the Excel export read the same regardless of the viewer's timezone.
+// created_at is stored as IST wall-clock time with no timezone
+// (e.g. "2026-09-17T14:05:45.293422"). Pin it to +05:30 when parsing and format
+// in IST, so every viewer and the Excel export see the same Indian time.
 const TZ = 'Asia/Kolkata'
-const fmtDate = (iso: string) =>
-  new Date(iso).toLocaleDateString('en-GB', { timeZone: TZ, day: '2-digit', month: 'short', year: 'numeric' })
-const fmtTime = (iso: string) =>
-  new Date(iso).toLocaleTimeString('en-IN', { timeZone: TZ, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }).toUpperCase()
+function parseIst(s: string) {
+  const [base, frac = ''] = s.replace(' ', 'T').split('.')
+  const ms = frac.replace(/\D.*$/, '').slice(0, 3)
+  const hasZone = /(Z|[+-]\d\d:?\d\d)$/.test(s)
+  return new Date(hasZone ? s : `${base}${ms ? '.' + ms : ''}+05:30`)
+}
+const fmtDate = (s: string) =>
+  parseIst(s).toLocaleDateString('en-GB', { timeZone: TZ, day: '2-digit', month: 'short', year: 'numeric' })
+const fmtTime = (s: string) =>
+  parseIst(s).toLocaleTimeString('en-IN', { timeZone: TZ, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }).toUpperCase()
 
 export default function AdminPage() {
   const [pw, setPw] = useState('')

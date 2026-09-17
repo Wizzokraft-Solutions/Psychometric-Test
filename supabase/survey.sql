@@ -32,7 +32,9 @@ insert into survey_settings (id, active_day) values (1, null) on conflict (id) d
 
 create table if not exists survey_submissions (
   id          uuid primary key default gen_random_uuid(),
-  created_at  timestamptz not null default now(),
+  -- Submission time in IST (Asia/Kolkata), stored without a timezone so the
+  -- Supabase dashboard shows Indian time as-is.
+  created_at  timestamp not null default (now() at time zone 'Asia/Kolkata'),
   day         int  not null check (day between 1 and 3),
   name        text not null,
   dob         date not null,

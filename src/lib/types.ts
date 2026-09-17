@@ -36,7 +36,7 @@ export type StoredAnswer = {
 
 export type Submission = {
   id: string
-  created_at: string
+  created_at: string // IST, no timezone suffix
   day: number
   name: string
   dob: string
