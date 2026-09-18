@@ -44,16 +44,17 @@ create table if not exists survey_submissions (
   -- [{ question_no, position, text, value (5..1), label }], ordered by question_no
   answers     jsonb not null
 );
--- One submission per person per day. There is no employee number, so a person
--- is identified by name (case/space-insensitive) + date of birth.
+-- Retakes are allowed: a person may submit as many times as they like, and each
+-- attempt is kept as its own row (admin sees all of them, newest first).
+-- survey_person_key normalises a name (case/space-insensitive); it is still used
+-- for grouping a person's attempts in reports.
 create or replace function survey_person_key(p_name text)
 returns text
 language sql
 immutable
 as $$ select lower(regexp_replace(trim(p_name), '\s+', ' ', 'g')) $$;
 
-create unique index if not exists survey_submissions_person_day
-  on survey_submissions (survey_person_key(name), dob, day);
+drop index if exists survey_submissions_person_day;
 
 alter table survey_questions   enable row level security;
 alter table survey_settings    enable row level security;
@@ -98,21 +99,8 @@ as $$
 $$;
 grant execute on function get_survey() to anon, authenticated;
 
--- has_submitted_survey: has this person (name + DOB) already submitted for the open day?
-create or replace function has_submitted_survey(p_name text, p_dob date)
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select exists (
-    select 1 from survey_submissions x, survey_settings s
-    where s.id = 1 and x.day = s.active_day
-      and survey_person_key(x.name) = survey_person_key(p_name) and x.dob = p_dob
-  );
-$$;
-grant execute on function has_submitted_survey(text, date) to anon, authenticated;
+-- (has_submitted_survey was dropped when retakes were allowed.)
+drop function if exists has_submitted_survey(text, date);
 
 -- submit_survey
 --   p_person  : { name, mobile, dob, designation, department }
@@ -144,11 +132,6 @@ begin
   if v_mobile !~ '^[6-9]\d{9}$' then
     raise exception 'invalid_mobile';
   end if;
-  if exists (select 1 from survey_submissions
-             where day = v_day and survey_person_key(name) = survey_person_key(v_name) and dob = v_dob) then
-    raise exception 'already_submitted';
-  end if;
-
   select count(*) into v_total from survey_questions where day = v_day;
 
   -- Join answers to the day's questions; only valid, distinct answers survive.

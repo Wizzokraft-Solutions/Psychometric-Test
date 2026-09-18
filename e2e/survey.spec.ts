@@ -9,7 +9,7 @@ const QUESTIONS = Array.from({ length: 30 }, (_, i) => ({
   text: `Sample question ${30 - i}?`,
 }))
 
-type Mock = { day: number | null; submitted?: unknown[]; already?: boolean }
+type Mock = { day: number | null; submitted?: unknown[] }
 
 async function mockSupabase(page: Page, mock: Mock) {
   const json = (route: Route, body: unknown, status = 200) =>
@@ -21,8 +21,6 @@ async function mockSupabase(page: Page, mock: Mock) {
     switch (fn) {
       case 'get_survey':
         return json(route, { day: mock.day, questions: mock.day == null ? [] : QUESTIONS })
-      case 'has_submitted_survey':
-        return json(route, !!mock.already)
       case 'submit_survey':
         mock.submitted?.push(body)
         return json(route, { id: 'x', day: mock.day })
@@ -73,13 +71,18 @@ test('invalid mobile number blocks starting', async ({ page }) => {
   await expect(page).not.toHaveURL(/#\/quiz/)
 })
 
-test('same name + DOB cannot start again on the same day', async ({ page }) => {
-  await mockSupabase(page, { day: 2, already: true })
+test('the same person may start the test again (retakes allowed)', async ({ page }) => {
+  await mockSupabase(page, { day: 2 })
   await page.goto('')
   await fillDetails(page)
   await page.getByRole('button', { name: /Start Test/i }).click()
-  await expect(page.getByText(/already completed today/i)).toBeVisible()
-  await expect(page).not.toHaveURL(/#\/quiz/)
+  await expect(page).toHaveURL(/#\/quiz/)
+  // Back to the start and straight in again — nothing blocks a second attempt.
+  await page.goto('')
+  await fillDetails(page)
+  await page.getByRole('button', { name: /Start Test/i }).click()
+  await expect(page).toHaveURL(/#\/quiz/)
+  await expect(page.getByText(/Question 1 of 30/i)).toBeVisible()
 })
 
 test('full flow: 30 questions, 5 options, breaks, submits every answer', async ({ page }) => {

@@ -26,7 +26,7 @@ export default function QuizPage() {
   const [showBreak, setShowBreak] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitErr, setSubmitErr] = useState<string | null>(null)
-  const [done, setDone] = useState<null | 'ok' | 'already'>(null)
+  const [done, setDone] = useState(false)
 
   useEffect(() => {
     if (!form) return
@@ -65,9 +65,7 @@ export default function QuizPage() {
         </motion.div>
         <h1 className="mt-4 text-3xl font-bold">Thank you! 🎉</h1>
         <p className="mt-2 text-muted-foreground">
-          {done === 'already'
-            ? 'You have already completed today’s assessment. You may now close this page.'
-            : 'Your responses have been recorded. You may now close this page.'}
+          Your responses have been recorded. You may now close this page.
         </p>
         <Button className="mt-6" onClick={() => navigate('/')}>Done</Button>
       </Shell>
@@ -96,12 +94,11 @@ export default function QuizPage() {
     setSubmitting(false)
     if (error) {
       const msg = error.message?.toLowerCase() ?? ''
-      if (msg.includes('already_submitted')) { setDone('already'); return }
       if (msg.includes('invalid_mobile')) { setSubmitErr('Your mobile number is invalid. Please go back and correct it.'); return }
       if (msg.includes('survey_closed')) { setSubmitErr('The assessment was closed before you submitted.'); return }
       setSubmitErr(error.message); return
     }
-    setDone('ok')
+    setDone(true)
   }
 
   if (showBreak) {

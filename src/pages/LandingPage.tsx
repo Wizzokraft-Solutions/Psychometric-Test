@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ChevronRight, CheckCircle2, Clock } from 'lucide-react'
+import { ChevronRight, Clock } from 'lucide-react'
 import Header from '@/components/Header'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
@@ -23,8 +23,6 @@ export default function LandingPage() {
   const [loadError, setLoadError] = useState<string | null>(null)
   const [form, setForm] = useState<PersonForm>(EMPTY_FORM)
   const [attempted, setAttempted] = useState(false)
-  const [alreadyDone, setAlreadyDone] = useState(false)
-  const [checking, setChecking] = useState(false)
 
   useEffect(() => {
     supabase.rpc('get_survey').then(({ data, error }) => {
@@ -40,15 +38,12 @@ export default function LandingPage() {
 
   function set<K extends keyof PersonForm>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }))
-    if (key === 'name' || key === 'dob') setAlreadyDone(false)
   }
 
-  async function startQuiz() {
+  // Retakes are allowed — the same person may take the assessment as often as
+  // they like, and every attempt is stored.
+  function startQuiz() {
     if (!formValid) { setAttempted(true); return }
-    setChecking(true)
-    const { data } = await supabase.rpc('has_submitted_survey', { p_name: form.name.trim(), p_dob: form.dob })
-    setChecking(false)
-    if (data === true) { setAlreadyDone(true); return }
     navigate('/quiz', { state: { form: { ...form, mobile: normalizeMobile(form.mobile) } } })
   }
 
@@ -104,17 +99,10 @@ export default function LandingPage() {
                 error={attempted && !form.department.trim() ? 'Required' : ''} />
             </div>
 
-            {alreadyDone && (
-              <div className="mt-6 flex items-center gap-2 rounded-lg border border-primary/40 bg-accent px-3 py-2 text-sm">
-                <CheckCircle2 className="size-4 text-brand-green" />
-                You have already completed today’s assessment. Thank you!
-              </div>
-            )}
-
-            <Button size="lg" className="mt-6 w-full sm:w-auto" disabled={alreadyDone || checking} onClick={startQuiz}>
-              {checking ? 'Checking…' : 'Start Test'} <ChevronRight className="size-4" />
+            <Button size="lg" className="mt-6 w-full sm:w-auto" onClick={startQuiz}>
+              Start Test <ChevronRight className="size-4" />
             </Button>
-            {attempted && !formValid && !alreadyDone && (
+            {attempted && !formValid && (
               <p className="mt-2 text-xs text-destructive">Please complete all required fields above.</p>
             )}
           </motion.section>
